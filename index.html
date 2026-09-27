@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Special Question for You ❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Sacramento&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    user-select: none;
+}
+
+body, button {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="24" font-size="22">💖</text></svg>'), auto !important;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffd1dc, #ffe6eb, #e8dff5);
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* ========== COMMON SCREEN SYSTEM ========== */
+.screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: opacity 0.8s ease, visibility 0.8s;
+    background: linear-gradient(135deg, #ffd1dc, #ffe6eb, #e8dff5);
+}
+.screen.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* ==================== BULLETPROOF SVG ENVELOPE ==================== */
+.env-container {
+    position: relative;
+    width: 320px;
+    height: 220px;
+    cursor: pointer;
+    perspective: 1000px;
+}
+
+.env-container:hover {
+    transform: translateY(-8px);
+    transition: transform 0.3s ease;
+}
+
+.envelope-box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #ff9ebb;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(255, 105, 180, 0.35);
+}
+
+/* Inside Paper Letter */
+.env-paper {
+    position: absolute;
+    bottom: 12px;
+    left: 5%;
+    width: 90%;
+    height: 170px;
+    background: #ffffff;
+    border-radius: 10px;
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sacramento', cursive;
+    font-size: 2.6rem;
+    color: #ff2a6d;
+    transition: transform 0.8s cubic-bezier(0.34, 1.25, 0.64, 1);
+    border: 1px solid #ffd1dc;
+}
+
+/* Top Flap SVG */
+.env-flap-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    transform-origin: top center;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 4;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12));
+}
+
+/* Front Pocket SVG */
+.env-pocket-svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Wax Seal Button */
+.env-seal {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 30% 30%, #ff4d6d, #d10045);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 6px 18px rgba(209, 0, 69, 0.45);
+    z-index: 5;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    animation: sealPulse 2s infinite;
+}
+
+@keyframes sealPulse {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.08); }
+}
+
+/* OPEN ANIMATION STATE */
+.env-container.open .env-flap-svg {
+    transform: rotateX(180deg);
+    z-index: 1; /* Move behind paper when opened */
+}
+
+.env-container.open .env-paper {
+    transform: translateY(-95px);
+    z-index: 4; /* Move in front when sliding out */
+}
+
+.env-container.open .env-seal {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.5);
+}
+
+.instruction {
+    margin-top: 45px;
+    color: #d81b60;
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-align: center;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ========== SCRATCH CARD ========== */
+.scratch-container {
+    background: white;
+    padding: 25px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(255,105,180,0.25);
+    text-align: center;
+    max-width: 380px;
+    width: 92%;
+}
+.scratch-container h2 { color: #d81b60; margin-bottom: 8px; font-size: 1.5rem; }
+.scratch-container p { color: #888; font-size: 0.95rem; margin-bottom: 20px; }
+.scratch-wrapper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+#scratchCanvas {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: 18px;
+    touch-action: none;
+    transition: opacity 0.5s ease;
+}
+.scratch-result {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #fff0f5, #ffe4ec);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    padding: 20px;
+}
+.scratch-result .emoji { font-size: 3.5rem; margin-bottom: 10px; }
+.scratch-result .message {
+    font-family: 'Sacramento', cursive;
+    font-size: 2.2rem;
+    color: #d81b60;
+    line-height: 1.2;
+}
+
+/* ========== HOLD HEART ========== */
+.hold-container { text-align: center; }
+.hold-container h2 { color: #d81b60; font-size: 1.7rem; margin-bottom: 10px; }
+.hold-container p { color: #888; margin-bottom: 40px; }
+.heart-hold {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.heart-bg {
+    font-size: 140px;
+    filter: drop-shadow(0 10px 25px rgba(255,64,129,0.4));
+}
+.hold-progress {
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: conic-gradient(#ff2a6d var(--progress), transparent var(--progress));
+    mask: radial-gradient(closest-side, transparent 70%, black 71%);
+    -webkit-mask: radial-gradient(closest-side, transparent 70%, black 71%);
+}
+.hold-text {
+    margin-top: 30px;
+    font-size: 1.15rem;
+    color: #d81b60;
+    font-weight: 600;
+}
+
+/* ========== MAIN PROPOSAL ========== */
+#main-screen {
+    z-index: 10;
+    padding: 20px;
+    overflow-y: auto;
+}
+.card {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    padding: 35px 28px;
+    border-radius: 28px;
+    box-shadow: 0 25px 50px rgba(255,105,180,0.2);
+    text-align: center;
+    max-width: 440px;
+    width: 100%;
+    transition: max-width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.love-meter-section {
+    margin-bottom: 18px;
+    background: #fff5f8;
+    padding: 12px 16px;
+    border-radius: 18px;
+}
+.love-meter-label {
+    font-size: 0.9rem;
+    color: #d81b60;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+}
+.love-meter-bg {
+    height: 22px;
+    background: #ffd6e5;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+}
+.love-meter-fill {
+    height: 100%;
+    width: 5%;
+    background: linear-gradient(90deg, #ff8fab, #ff2a6d);
+    border-radius: 50px;
+    transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+.love-meter-fill.maxed {
+    background: linear-gradient(90deg, #ff2a6d, #ff0055, #ffb700);
+    box-shadow: 0 0 15px #ff0055;
+}
+.love-meter-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shine 1.5s infinite;
+}
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+.love-percent {
+    font-size: 0.95rem;
+    color: #ff2a6d;
+    font-weight: 800;
+}
+.love-reason {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: #d81b60;
+    font-weight: 600;
+    min-height: 22px;
+}
+
+.gif-container {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0 15px;
+}
+.gif-container img {
+    max-height: 100%;
+    max-width: 100%;
+    border-radius: 16px;
+    object-fit: contain;
+}
+
+h1 {
+    color: #d81b60;
+    font-size: 1.7rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+    min-height: 50px;
+}
+.subtitle {
+    color: #777;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: nowrap;
+    min-height: 80px;
+}
+button {
+    padding: 12px 28px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    white-space: nowrap;
+}
+#yesBtn {
+    background: linear-gradient(135deg, #ff4d6d, #ff2a6d);
+    color: white;
+    animation: pulseYes 2.2s infinite;
+}
+@keyframes pulseYes {
+    0% { box-shadow: 0 0 0 0 rgba(255,64,129,0.5); }
+    70% { box-shadow: 0 0 0 14px rgba(255,64,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,64,129,0); }
+}
+#yesBtn:hover {
+    transform: scale(1.07);
+    animation: none;
+}
+#noBtn {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.hidden { display: none !important; }
+.success-text {
+    font-family: 'Sacramento', cursive;
+    font-size: 2.8rem;
+    color: #d81b60;
+    margin-top: 10px;
+}
+.sweet-message {
+    color: #555;
+    font-size: 1.05rem;
+    margin-top: 10px;
+    line-height: 1.5;
+}
+
+.poppable {
+    position: fixed;
+    font-size: 24px;
+    z-index: 5;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+    animation: floatY 6s ease-in-out infinite;
+    cursor: pointer;
+}
+@keyframes floatY {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-25px); }
+}
+.poppable.popped {
+    animation: pop 0.4s forwards;
+}
+@keyframes pop {
+    to { transform: scale(0); opacity: 0; }
+}
+.cursor-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    animation: trail 0.8s forwards;
+}
+@keyframes trail {
+    to { opacity: 0; transform: translate(-50%,-40px) scale(0.3); }
+}
+</style>
+</head>
+<body>
+
+<!-- ENVELOPE SCREEN -->
+<div class="screen" id="envelopeScreen">
+    <div class="env-container" id="envelope">
+        <div class="envelope-box">
+            <!-- Paper Letter Inside -->
+            <div class="env-paper">For You 💕</div>
+            
+            <!-- Top Flap SVG -->
+            <svg class="env-flap-svg" viewBox="0 0 320 120">
+                <polygon points="0,0 320,0 160,115" fill="#ff7597"/>
+            </svg>
+
+            <!-- Front Pocket SVG -->
+            <svg class="env-pocket-svg" viewBox="0 0 320 140">
+                <polygon points="0,140 0,20 160,85 320,20 320,140" fill="#ff8aa8"/>
+            </svg>
+
+            <!-- Wax Seal -->
+            <div class="env-seal">💌</div>
+        </div>
+    </div>
+    <div class="instruction">
+        Click the envelope to open
+        <span style="font-size:0.95rem;font-weight:400;display:block;margin-top:6px;opacity:0.8;">something special is waiting for u  ✨</span>
+    </div>
+</div>
+
+<!-- SCRATCH SCREEN -->
+<div class="screen hide" id="scratchScreen">
+    <div class="scratch-container">
+        <h2>Scratch Me! ✨</h2>
+        <p>Use your finger or mouse to scratch the card</p>
+        <div class="scratch-wrapper">
+            <canvas id="scratchCanvas"></canvas>
+            <div class="scratch-result">
+                <div class="emoji">🐻💕</div>
+                <div class="message">You make my<br>heart smile</div>
+            </div>
+        </div>
+        <p style="margin-top:15px;font-size:0.85rem;color:#aaa;" id="scratchHint">Keep scratching...</p>
+    </div>
+</div>
+
+<!-- HOLD SCREEN -->
+<div class="screen hide" id="holdScreen">
+    <div class="hold-container">
+        <h2>One last step...</h2>
+        <p>Press & hold the heart to unlock</p>
+        <div class="heart-hold" id="heartHold">
+            <div class="hold-progress" id="holdProgress" style="--progress: 0deg"></div>
+            <div class="heart-bg">💖</div>
+        </div>
+        <div class="hold-text" id="holdText">Hold me tight 💗</div>
+    </div>
+</div>
+
+<!-- MAIN PROPOSAL -->
+<div class="screen hide" id="main-screen">
+    <div class="card" id="mainCard">
+        <div class="love-meter-section">
+            <div class="love-meter-label">
+                <span>❤️ Love Meter</span>
+                <span class="love-percent" id="lovePercent">5%</span>
+            </div>
+            <div class="love-meter-bg">
+                <div class="love-meter-fill" id="loveFill"></div>
+            </div>
+            <div class="love-reason" id="loveReason">Love level starting at 5%... 💕</div>
+        </div>
+
+        <div id="askScreen">
+            <div class="gif-container">
+                <img src="bear.gif" onerror="this.src='https://media.tenor.com/0iK88W8L12MAAAAi/milk-and-mocha-bear.gif'" alt="Bear">
+            </div>
+            <h1 id="questionText">Will you be my girlfriend? 🥺</h1>
+            <p class="subtitle" id="subtitleText">Please think carefully... (there's only one right answer 😉)</p>
+            
+            <div class="btn-group">
+                <button id="yesBtn">Yes! 💖</button>
+                <button id="noBtn">No</button>
+            </div>
+        </div>
+
+        <div id="successScreen" class="hidden">
+            <div class="gif-container">
+                <img src="kiss.gif" onerror="this.src='https://media.tenor.com/gUiu1zyxfzYAAAAi/bear-kiss-bear-kisses.gif'" alt="Kiss">
+            </div>
+            <div class="success-text">Yaaay! She said YES! 🎉</div>
+            <p class="sweet-message">
+                You just made me the happiest person alive! ❤️<br>
+                Can't wait to make countless sweet memories together.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Envelope open logic
+const envelope = document.getElementById('envelope');
+const envelopeScreen = document.getElementById('envelopeScreen');
+const scratchScreen = document.getElementById('scratchScreen');
+const holdScreen = document.getElementById('holdScreen');
+const mainScreen = document.getElementById('main-screen');
+
+envelope.addEventListener('click', () => {
+    envelope.classList.add('open');
+    
+    // Smooth transition after letter glides out
+    setTimeout(() => {
+        envelopeScreen.classList.add('hide');
+        scratchScreen.classList.remove('hide');
+        initScratch();
+    }, 1200);
+});
+
+// Scratch Card
+function initScratch() {
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const wrapper = canvas.parentElement;
+    
+    canvas.width = wrapper.offsetWidth;
+    canvas.height = wrapper.offsetHeight;
+
+    ctx.fillStyle = '#c0c0c0';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    for(let i=0; i<120; i++){
+        ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.5+0.3})`;
+        ctx.beginPath();
+        ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*2+1, 0, Math.PI*2);
+        ctx.fill();
+    }
+    
+    ctx.font = 'bold 22px Poppins';
+    ctx.fillStyle = '#555';
+    ctx.textAlign = 'center';
+    ctx.fillText('SCRATCH HERE', canvas.width/2, canvas.height/2);
+
+    let isDrawing = false;
+    let scratched = 0;
+    let isCompleted = false;
+    const total = canvas.width * canvas.height;
+
+    function scratch(x, y) {
+        if (isCompleted) return;
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 28, 0, Math.PI*2);
+        ctx.fill();
+        scratched += 2500;
+        
+        if (scratched > total * 0.45) {
+            document.getElementById('scratchHint').innerText = 'Almost there... keep going!';
+        }
+        if (scratched > total * 0.55 && !isCompleted) {
+            isCompleted = true;
+            canvas.style.opacity = '0';
+            document.getElementById('scratchHint').innerText = 'Revealed! ✨ Unlocking next step...';
+
+            setTimeout(() => {
+                scratchScreen.classList.add('hide');
+                holdScreen.classList.remove('hide');
+            }, 2500);
+        }
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    canvas.addEventListener('mousedown', e => { isDrawing = true; scratch(getPos(e).x, getPos(e).y); });
+    canvas.addEventListener('mousemove', e => { if(isDrawing) scratch(getPos(e).x, getPos(e).y); });
+    window.addEventListener('mouseup', () => isDrawing = false);
+
+    canvas.addEventListener('touchstart', e => { isDrawing = true; scratch(getPos(e).x, getPos(e).y); });
+    canvas.addEventListener('touchmove', e => { if(isDrawing) { e.preventDefault(); scratch(getPos(e).x, getPos(e).y); }});
+    window.addEventListener('touchend', () => isDrawing = false);
+}
+
+// Press & Hold
+let holdInterval;
+let progress = 0;
+const heartHold = document.getElementById('heartHold');
+const holdProgress = document.getElementById('holdProgress');
+const holdText = document.getElementById('holdText');
+
+function startHold() {
+    holdText.innerText = "Keep holding... 💕";
+    holdInterval = setInterval(() => {
+        progress += 2.2;
+        holdProgress.style.setProperty('--progress', progress * 3.6 + 'deg');
+        if (progress >= 100) {
+            clearInterval(holdInterval);
+            holdText.innerText = "Unlocked! ✨";
+            setTimeout(() => {
+                holdScreen.classList.add('hide');
+                mainScreen.classList.remove('hide');
+                createPoppables();
+            }, 500);
+        }
+    }, 30);
+}
+function endHold() {
+    clearInterval(holdInterval);
+    if (progress < 100) {
+        progress = Math.max(0, progress - 15);
+        holdProgress.style.setProperty('--progress', progress * 3.6 + 'deg');
+        holdText.innerText = "Hold me tight 💗";
+    }
+}
+heartHold.addEventListener('mousedown', startHold);
+heartHold.addEventListener('mouseup', endHold);
+heartHold.addEventListener('mouseleave', endHold);
+heartHold.addEventListener('touchstart', e => { e.preventDefault(); startHold(); });
+heartHold.addEventListener('touchend', endHold);
+
+// Main Proposal + Love Meter
+const mainCard = document.getElementById('mainCard');
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+const questionText = document.getElementById('questionText');
+const subtitleText = document.getElementById('subtitleText');
+const loveFill = document.getElementById('loveFill');
+const lovePercent = document.getElementById('lovePercent');
+const loveReason = document.getElementById('loveReason');
+
+let clickCount = 0;
+let love = 5;
+let yesFontSize = 1.05;
+let yesPadding = 12;
+let cardMaxWidth = 440;
+
+const evolvingEmojis = ["🤨","😢","😭","💔","🧎‍♂️","😩","🥀","🫠","💀","🥺"];
+const noPhrases = ["Are you sure?","Really sure??","Think again! 💭","Last chance! 😭","Surely not?","Don't break my heart","Please? 🧸","YES is better!","Pretty please?","No (again?)"];
+const subtitleMessages = [
+    "Wait, did your finger slip? 🤨",
+    "Are you really sure about that? 🥺",
+    "My heart just dropped... 💔",
+    "I come with free snacks & cuddles! 🍫",
+    "Look at the Love Meter going crazy!",
+    "Error 404: 'No' not accepted 🤖",
+    "Playing hard to get? 😏",
+    "Just look at the cute bears! 🧸",
+    "Pretty please with sprinkles? ✨",
+    "Just say YES already! 😤💖"
+];
+const loveReasonsList = [
+    "+15% because playing hard to get is cute! 😏",
+    "+25% because stubbornness is your best trait! 🥺",
+    "+35% because my love is unstoppable! 🚀",
+    "+50% because you're testing my dedication! 💖",
+    "+70% because I love a challenge! 🏆",
+    "+90% because your 'No' still sounds adorable! 🥰",
+    "+120% Error: Love capacity overflowing! 🤖",
+    "+180% because you're teasing me and I love it! 😤",
+    "+250% MAX OVERFLOW! There is no escape! 🔥",
+    "+500% LOVE CRITICAL MASS REACHED! 💥"
+];
+
+noBtn.addEventListener('click', () => {
+    questionText.innerText = `Will you be my girlfriend? ${evolvingEmojis[clickCount % 10]}`;
+    noBtn.innerText = noPhrases[clickCount % 10];
+    subtitleText.innerText = subtitleMessages[clickCount % 10];
+    
+    love = Math.min(love + (clickCount < 4 ? 18 : 35), 999);
+    loveFill.style.width = Math.min(love, 100) + '%';
+    lovePercent.innerText = love + '%';
+    
+    if (love >= 100) {
+        loveFill.classList.add('maxed');
+        lovePercent.innerText = love + '% 🔥';
+    }
+
+    loveReason.innerText = loveReasonsList[clickCount % loveReasonsList.length];
+    
+    yesFontSize += 0.28;
+    yesPadding += 3;
+    yesBtn.style.fontSize = yesFontSize + 'rem';
+    yesBtn.style.padding = `${yesPadding}px ${yesPadding*1.7}px`;
+    
+    cardMaxWidth += 40;
+    mainCard.style.maxWidth = cardMaxWidth + 'px';
+    
+    clickCount++;
+});
+
+yesBtn.addEventListener('click', () => {
+    yesBtn.disabled = true;
+    noBtn.disabled = true;
+    loveFill.classList.add('maxed');
+    loveReason.innerText = "🎉 SHE SAID YES! LOVE LEVEL: 1000% MAXIMUM OVERLOAD!";
+    
+    let currentLove = love;
+    const targetLove = 1000;
+    
+    const counterInterval = setInterval(() => {
+        currentLove += Math.ceil((targetLove - currentLove) / 5) + 5;
+        if (currentLove >= targetLove) {
+            currentLove = 1000;
+            clearInterval(counterInterval);
+            
+            setTimeout(() => {
+                document.getElementById('askScreen').classList.add('hidden');
+                document.getElementById('successScreen').classList.remove('hidden');
+                mainCard.style.maxWidth = '440px';
+                launchConfetti();
+            }, 600);
+        }
+        lovePercent.innerText = currentLove + '% 🔥';
+        loveFill.style.width = '100%';
+    }, 40);
+});
+
+function launchConfetti() {
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    confetti({ particleCount: 80, angle: 60, spread: 55, origin: { x: 0 } });
+    confetti({ particleCount: 80, angle: 120, spread: 55, origin: { x: 1 } });
+}
+
+function createPoppables() {
+    const emojis = ['💖','💕','💗','🎈','✨','🌸','💓','🎀'];
+    setInterval(() => {
+        const el = document.createElement('div');
+        el.className = 'poppable';
+        el.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+        el.style.left = Math.random()*90+5 + 'vw';
+        el.style.top = Math.random()*70+15 + 'vh';
+        el.style.fontSize = (18+Math.random()*14) + 'px';
+        document.body.appendChild(el);
+        
+        el.addEventListener('click', () => {
+            el.classList.add('popped');
+            setTimeout(() => el.remove(), 400);
+        });
+        setTimeout(() => { if(el.parentElement) el.remove(); }, 7000);
+    }, 1400);
+}
+
+let lastTrail = 0;
+document.addEventListener('mousemove', e => {
+    if(Date.now() - lastTrail > 40) {
+        const t = document.createElement('div');
+        t.className = 'cursor-trail';
+        t.innerText = ['✨','💖','💕'][Math.floor(Math.random()*3)];
+        t.style.left = e.clientX + 'px';
+        t.style.top = e.clientY + 'px';
+        t.style.fontSize = (12+Math.random()*8) + 'px';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 800);
+        lastTrail = Date.now();
+    }
+});
+</script>
+</body>
+</html>
